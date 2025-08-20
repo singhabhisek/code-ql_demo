@@ -1,0 +1,61 @@
+# Workflow name shown in GitHub Actions UI
+name: "CodeQL Multi-Language Advanced"
+
+# Define triggers for this workflow
+on:
+  push:
+    branches: [ "main" ]   # Run scan when changes are pushed to main branch
+  pull_request:
+    branches: [ "main" ]   # Run scan for pull requests targeting main
+  schedule:
+    - cron: '0 3 * * 1'    # Optional: run every Monday at 03:00 UTC
+
+jobs:
+  analyze:
+    # Runner machine for executing this job
+    runs-on: ubuntu-latest
+
+    # Permissions needed for CodeQL and private repos
+    permissions:
+      security-events: write   # Needed to write security alerts
+      contents: read           # Needed to read repo files
+      packages: read           # Needed if using private packages
+
+    # Define a strategy matrix to run scans for multiple languages
+    strategy:
+      fail-fast: false   # Don't cancel other runs if one fails
+      matrix:
+        include:
+          - language: javascript-typescript  # Scan JS/TS code
+            build-mode: none                 # No build needed for interpreted languages
+          - language: python                 # Scan Python code
+            build-mode: none                 # No build needed for interpreted languages
+          # Additional languages could be added here:
+          # - language: java-kotlin
+          # - language: c-cpp
+          # - language: ruby
+          # - language: go
+
+    steps:
+      # Step 1: Checkout the repository to the runner
+      - uses: actions/checkout@v4
+
+      # Step 2: Initialize CodeQL for the selected language
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}  # Use the current language from the matrix
+          # build-mode could also be set here if needed, e.g., ${{ matrix.build-mode }}
+
+      # Step 3: Optional build step for compiled languages
+      - if: matrix.build-mode == 'manual'      # Only run if manual build required
+        run: |
+          # Replace these lines with actual build commands for compiled languages
+          echo "Add custom build commands here (e.g., make, mvn, gradle, etc.)"
+          exit 1  # Exit to force update if not configured
+
+      # Step 4: Run the CodeQL analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"  # Categorize results by language
