@@ -11,3 +11,15 @@ exec(command, (err, stdout) => {
   if (err) console.error(err);
   console.log(stdout);
 });
+
+
+function run(cmd) {
+    const { exec } = require("child_process");
+    exec(cmd, (err, stdout) => {
+        if (err) console.error(err);
+        console.log(stdout);
+    });
+}
+
+const safeCmd = "echo HelloWorld";
+run(safeCmd); // Might trigger CodeQL because data flows through a function
